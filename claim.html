@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SXL · Claim Lifafa</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  body {
+    background: #0b1120;
+    color: #e2e8f0;
+    text-align: center;
+    padding-bottom: 30px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .header {
+    background: #0f172a;
+    padding: 20px;
+    font-size: 32px;
+    font-weight: 700;
+    border-bottom: 1px solid #1e293b;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    color: white;
+    letter-spacing: 1px;
+  }
+  .container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 0 12px;
+    flex: 1;
+  }
+  .glass-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 32px;
+    padding: 28px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 20px 35px -8px rgba(0,0,0,0.8);
+  }
+  .lifafa-banner {
+    font-size: 80px;
+    margin: 10px 0;
+    filter: drop-shadow(0 0 20px #2563eb);
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  .game-area {
+    font-size: 80px;
+    margin: 30px 0;
+    min-height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #1e293b;
+    border-radius: 40px;
+    padding: 20px;
+  }
+  .primary-btn {
+    background: linear-gradient(145deg, #2563eb, #1d4ed8);
+    border: none;
+    padding: 18px 40px;
+    border-radius: 60px;
+    font-weight: 700;
+    font-size: 20px;
+    color: white;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 10px 25px #1e3a8a;
+    transition: 0.2s;
+    margin: 15px 0;
+  }
+  .primary-btn:hover:not(:disabled) {
+    background: #3b82f6;
+    transform: translateY(-3px);
+  }
+  .primary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .secondary-btn {
+    background: transparent;
+    border: 2px solid #3b82f6;
+    padding: 16px 40px;
+    border-radius: 60px;
+    font-weight: 600;
+    font-size: 18px;
+    color: white;
+    width: 100%;
+    cursor: pointer;
+    margin: 10px 0;
+  }
+  .secondary-btn:hover {
+    background: #1e293b;
+  }
+  .info-box {
+    background: #1e293b;
+    border-radius: 24px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #334155;
+  }
+  .info-row:last-child {
+    border-bottom: none;
+  }
+  .label {
+    color: #94a3b8;
+  }
+  .value {
+    color: #fbbf24;
+    font-weight: 600;
+  }
+  .code-input {
+    background: #0f172a;
+    border: 2px solid #2563eb;
+    border-radius: 50px;
+    padding: 16px 20px;
+    font-size: 20px;
+    text-align: center;
+    letter-spacing: 4px;
+    margin: 15px 0;
+  }
+  .timer {
+    font-size: 24px;
+    color: #60a5fa;
+    margin: 15px 0;
+  }
+  .winner-animation {
+    animation: winner 1s ease infinite;
+  }
+  @keyframes winner {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); color: #fbbf24; }
+    100% { transform: scale(1); }
+  }
+  .status-message {
+    background: #1e293b;
+    border-radius: 30px;
+    padding: 16px;
+    margin: 15px 0;
+    font-size: 18px;
+  }
+  .success {
+    color: #4ade80;
+  }
+  .error {
+    color: #f87171;
+  }
+  .warning {
+    color: #fbbf24;
+  }
+  .claimed-users {
+    background: #1e293b;
+    border-radius: 20px;
+    padding: 12px;
+    margin: 15px 0;
+    font-size: 14px;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #334155;
+    border-radius: 10px;
+    margin: 15px 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #60a5fa);
+    transition: width 0.3s ease;
+  }
+  .safety-note {
+    background: #05966920;
+    border: 1px solid #10b981;
+    border-radius: 20px;
+    padding: 12px;
+    margin: 15px 0;
+    font-size: 14px;
+    color: #6ee7b7;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">🎁 SXL · CLAIM LIFAFA</div>
+
+<div class="container" id="claimContainer">
+  <!-- Loading State -->
+  <div id="loadingState" class="glass-card">
+    <div class="lifafa-banner">⏳</div>
+    <h2>Loading Lifafa...</h2>
+    <p style="color:#94a3b8; margin-top:15px;">Please wait while we fetch the details</p>
+  </div>
+
+  <!-- Error State -->
+  <div id="errorState" style="display:none;" class="glass-card">
+    <div class="lifafa-banner">❌</div>
+    <h2 style="color:#f87171;">Invalid Lifafa</h2>
+    <p style="color:#94a3b8; margin:20px 0;">This lifafa doesn't exist or has expired</p>
+    <button class="primary-btn" onclick="goHome()">🏠 GO HOME</button>
+  </div>
+
+  <!-- Claim State -->
+  <div id="claimState" style="display:none;" class="glass-card">
+    <!-- Lifafa Header -->
+    <div class="lifafa-banner" id="lifafaEmoji">🧧</div>
+    <h2 id="lifafaTitle" style="color:#fbbf24; font-size:28px;"></h2>
+    <p id="lifafaComment" style="color:#94a3b8; margin-top:5px;"></p>
+    
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="info-box">
+      <div class="info-row">
+        <span class="label">💰 Per User Amount:</span>
+        <span class="value" id="perUserAmount">₹0</span>
+      </div>
+      <div class="info-row">
+        <span class="label">👥 Total Users:</span>
+        <span class="value" id="totalUsers">0</span>
+      </div>
+      <div class="info-row">
+        <span class="label">✅ Claimed:</span>
+        <span class="value" id="claimedCount">0</span>
+      </div>
+      <div class="info-row">
+        <span class="label">🎮 Game Type:</span>
+        <span class="value" id="gameType">Normal</span>
+      </div>
+    </div>
+
+    <!-- Code Input (if required) -->
+    <div id="codeSection" style="display:none;">
+      <div style="text-align:left; color:#94a3b8; margin-bottom:5px;">🔐 Enter Secret Code</div>
+      <input type="text" id="codeInput" class="code-input" placeholder="Enter code" maxlength="20">
+    </div>
+
+    <!-- Video Section (if required) -->
+    <div id="videoSection" style="display:none;">
+      <div id="videoPlayer" style="margin:15px 0;"></div>
+      <div class="timer" id="timer">⏱️ 0:00</div>
+    </div>
+
+    <!-- Game Area -->
+    <div class="game-area" id="gameArea">
+      🎮
+    </div>
+
+    <!-- Claim Button -->
+    <button class="primary-btn" id="claimBtn" onclick="handleClaim()">
+      🎮 CLAIM NOW
+    </button>
+
+    <!-- Status Message -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <!-- Recent Claims (if any) -->
+    <div id="recentClaims" class="claimed-users" style="display:none;">
+      <div style="color:#94a3b8; margin-bottom:8px;">📜 Recent Claims:</div>
+      <div id="claimsList"></div>
+    </div>
+
+    <!-- Safety Note -->
+    <div class="safety-note">
+      ⚡ Each user can claim once. Winners are recorded instantly.
+    </div>
+
+    <!-- Home Button -->
+    <button class="secondary-btn" onclick="goHome()">🏠 HOME</button>
+  </div>
+
+  <!-- Success State -->
+  <div id="successState" style="display:none;" class="glass-card">
+    <div class="lifafa-banner winner-animation">🏆</div>
+    <h2 style="color:#4ade80;">Congratulations!</h2>
+    <p style="font-size:24px; margin:20px 0;" id="winAmount">You won ₹0</p>
+    <div class="info-box" id="winDetails"></div>
+    <button class="primary-btn" onclick="window.location.reload()">🔄 CLAIM AGAIN</button>
+    <button class="secondary-btn" onclick="goHome()">🏠 HOME</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Get lifafa ID from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const lifafaId = urlParams.get('id');
+  
+  // Elements
+  const loadingState = document.getElementById('loadingState');
+  const errorState = document.getElementById('errorState');
+  const claimState = document.getElementById('claimState');
+  const successState = document.getElementById('successState');
+  
+  // Current lifafa data
+  let currentLifafa = null;
+  let watchTimer = null;
+  let watchSecondsLeft = 0;
+  let userTelegramId = null;
+
+  // Initialize
+  window.onload = function() {
+    if (!lifafaId) {
+      showError();
+      return;
+    }
+    
+    loadLifafa();
+  };
+
+  // Load lifafa from storage
+  function loadLifafa() {
+    try {
+      const giveaways = JSON.parse(localStorage.getItem('giveaways') || '{}');
+      currentLifafa = giveaways[lifafaId];
+      
+      if (!currentLifafa) {
+        showError();
+        return;
+      }
+      
+      // Check if user is logged in (you can modify this based on your auth system)
+      checkUserLogin();
+      
+      renderClaimPage();
+      
+    } catch (e) {
+      console.error('Error loading lifafa:', e);
+      showError();
+    }
+  }
+
+  // Check if user is logged in (modify based on your auth system)
+  function checkUserLogin() {
+    // Try to get user ID from multiple sources
+    userTelegramId = localStorage.getItem('userTelegramId') || 
+                     sessionStorage.getItem('userId') || 
+                     prompt('Please enter your Telegram ID to claim:', '');
+    
+    if (userTelegramId) {
+      // Save for future use
+      localStorage.setItem('userTelegramId', userTelegramId);
+    }
+  }
+
+  // Render claim page
+  function renderClaimPage() {
+    loadingState.style.display = 'none';
+    claimState.style.display = 'block';
+    
+    // Basic info
+    document.getElementById('lifafaTitle').innerText = currentLifafa.name || 'Unnamed Lifafa';
+    document.getElementById('lifafaComment').innerText = currentLifafa.comment || '✨ Special giveaway';
+    document.getElementById('perUserAmount').innerText = '₹' + (currentLifafa.per || 0);
+    document.getElementById('totalUsers').innerText = currentLifafa.total || 0;
+    document.getElementById('claimedCount').innerText = currentLifafa.claimed || 0;
+    
+    // Game type emoji
+    const gameEmojis = {
+      'dice': '🎲',
+      'toss': '🪙',
+      'scratch': '🧩',
+      'normal': '🎁'
+    };
+    document.getElementById('gameType').innerText = (currentLifafa.type || 'normal').toUpperCase();
+    document.getElementById('lifafaEmoji').innerText = gameEmojis[currentLifafa.type] || '🧧';
+    
+    // Update progress bar
+    const progress = ((currentLifafa.claimed || 0) / (currentLifafa.total || 1)) * 100;
+    document.getElementById('progressFill').style.width = progress + '%';
+    
+    // Check if already claimed by this user
+    if (userTelegramId && currentLifafa.claimedBy && currentLifafa.claimedBy[userTelegramId]) {
+      showAlreadyClaimed();
+      return;
+    }
+    
+    // Check if fully claimed
+    if (currentLifafa.claimed >= currentLifafa.total) {
+      showFullyClaimed();
+      return;
+    }
+    
+    // Handle code requirement
+    if (currentLifafa.codeRequired && currentLifafa.code) {
+      document.getElementById('codeSection').style.display = 'block';
+    }
+    
+    // Handle video requirement
+    if (currentLifafa.yt && currentLifafa.watch > 0) {
+      setupVideoWatch();
+    }
+    
+    // Show recent claims if any
+    if (currentLifafa.claimedBy) {
+      showRecentClaims();
+    }
+  }
+
+  // Setup video watch timer
+  function setupVideoWatch() {
+    const videoSection = document.getElementById('videoSection');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const timerEl = document.getElementById('timer');
+    const claimBtn = document.getElementById('claimBtn');
+    
+    videoSection.style.display = 'block';
+    
+    // Embed YouTube video
+    let embedUrl = currentLifafa.yt.includes('youtube.com') ? 
+      currentLifafa.yt : 
+      `https://www.youtube.com/embed/${currentLifafa.yt}`;
+    
+    videoPlayer.innerHTML = `<iframe width="100%" height="200" src="${embedUrl}" frameborder="0" allowfullscreen style="border-radius:20px;"></iframe>`;
+    
+    // Start timer
+    watchSecondsLeft = currentLifafa.watch * 60;
+    claimBtn.disabled = true;
+    updateTimerDisplay();
+    
+    watchTimer = setInterval(() => {
+      watchSecondsLeft--;
+      
+      if (watchSecondsLeft <= 0) {
+        clearInterval(watchTimer);
+        claimBtn.disabled = false;
+        timerEl.innerHTML = '✅ You can claim now!';
+        timerEl.style.color = '#4ade80';
+      } else {
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
+
+  // Update timer display
+  function updateTimerDisplay() {
+    const minutes = Math.floor(watchSecondsLeft / 60);
+    const seconds = watchSecondsLeft % 60;
+    document.getElementById('timer').innerHTML = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  // Show recent claims
+  function showRecentClaims() {
+    const claimsList = document.getElementById('claimsList');
+    const recentClaims = document.getElementById('recentClaims');
+    
+    if (currentLifafa.claimedBy) {
+      const claims = Object.entries(currentLifafa.claimedBy)
+        .slice(-3)
+        .reverse()
+        .map(([userId, data]) => {
+          const time = new Date(data.timestamp).toLocaleTimeString();
+          return `<div style="display:flex; justify-content:space-between; margin:5px 0;">
+            <span>👤 ${userId.slice(0,6)}...</span>
+            <span style="color:#4ade80;">₹${data.amount}</span>
+            <span style="color:#94a3b8;">${time}</span>
+          </div>`;
+        }).join('');
+      
+      claimsList.innerHTML = claims;
+      recentClaims.style.display = 'block';
+    }
+  }
+
+  // Show already claimed message
+  function showAlreadyClaimed() {
+    const statusEl = document.getElementById('statusMessage');
+    statusEl.innerHTML = '❌ You have already claimed this lifafa!';
+    statusEl.classList.add('error');
+    document.getElementById('claimBtn').disabled = true;
+  }
+
+  // Show fully claimed message
+  function showFullyClaimed() {
+    const statusEl = document.getElementById('statusMessage');
+    statusEl.innerHTML = '🏁 This lifafa has been fully claimed!';
+    statusEl.classList.add('warning');
+    document.getElementById('claimBtn').disabled = true;
+  }
+
+  // Show error
+  function showError() {
+    loadingState.style.display = 'none';
+    errorState.style.display = 'block';
+  }
+
+  // Handle claim
+  function handleClaim() {
+    // Check if user is logged in
+    if (!userTelegramId) {
+      userTelegramId = prompt('Please enter your Telegram ID to claim:');
+      if (!userTelegramId) return;
+      localStorage.setItem('userTelegramId', userTelegramId);
+    }
+    
+    // Check if already claimed
+    if (currentLifafa.claimedBy && currentLifafa.claimedBy[userTelegramId]) {
+      showAlreadyClaimed();
+      return;
+    }
+    
+    // Check code if required
+    if (currentLifafa.codeRequired && currentLifafa.code) {
+      const enteredCode = document.getElementById('codeInput').value.trim();
+      if (enteredCode !== currentLifafa.code) {
+        document.getElementById('statusMessage').innerHTML = '❌ Invalid code!';
+        document.getElementById('statusMessage').classList.add('error');
+        return;
+      }
+    }
+    
+    // Play game based on type
+    let reward = currentLifafa.per;
+    let gameResult = '';
+    
+    switch(currentLifafa.type) {
+      case 'dice':
+        const dice = Math.floor(Math.random() * 6) + 1;
+        gameResult = '🎲 ' + dice;
+        if (dice === 6) {
+          reward = reward * 2;
+          gameResult += ' (DOUBLE!)';
+        }
+        break;
+        
+      case 'toss':
+        const heads = Math.random() < 0.5;
+        gameResult = heads ? '🪙 HEADS' : '🪙 TAILS';
+        if (heads) {
+          reward = Math.floor(reward * 1.5);
+          gameResult += ' (+50%)';
+        }
+        break;
+        
+      case 'scratch':
+        const chance = currentLifafa.scratchChance || 100;
+        const win = Math.random() * 100 < chance;
+        if (win) {
+          reward = Math.floor(Math.random() * (currentLifafa.per * 2)) + 1;
+          gameResult = '🧩 WIN ₹' + reward;
+        } else {
+          reward = 0;
+          gameResult = '🧩 LOST';
+        }
+        break;
+        
+      default:
+        gameResult = '✅ CLAIMED';
+    }
+    
+    // Show game result
+    document.getElementById('gameArea').innerHTML = gameResult;
+    
+    // Update lifafa data
+    currentLifafa.claimed = (currentLifafa.claimed || 0) + 1;
+    
+    // Record who claimed
+    if (!currentLifafa.claimedBy) currentLifafa.claimedBy = {};
+    currentLifafa.claimedBy[userTelegramId] = {
+      amount: reward,
+      timestamp: new Date().toISOString(),
+      gameResult: gameResult
+    };
+    
+    // Save to localStorage
+    const giveaways = JSON.parse(localStorage.getItem('giveaways') || '{}');
+    giveaways[lifafaId] = currentLifafa;
+    localStorage.setItem('giveaways', JSON.stringify(giveaways));
+    
+    // Show success
+    showSuccess(reward, gameResult);
+  }
+
+  // Show success
+  function showSuccess(amount, gameResult) {
+    claimState.style.display = 'none';
+    successState.style.display = 'block';
+    
+    document.getElementById('winAmount').innerHTML = `You won ₹${amount}`;
+    
+    let details = '';
+    details += `<div class="info-row"><span class="label">Game Result:</span><span class="value">${gameResult}</span></div>`;
+    details += `<div class="info-row"><span class="label">Transaction ID:</span><span class="value">#${Math.random().toString(36).substr(2,9)}</span></div>`;
+    details += `<div class="info-row"><span class="label">Time:</span><span class="value">${new Date().toLocaleTimeString()}</span></div>`;
+    
+    document.getElementById('winDetails').innerHTML = details;
+    
+    // Redirect if after link exists
+    if (currentLifafa.after && currentLifafa.after.trim()) {
+      setTimeout(() => {
+        window.location.href = currentLifafa.after;
+      }, 3000);
+    }
+  }
+
+  // Go home
+  window.goHome = function() {
+    window.location.href = window.location.pathname.replace(/\/[^/]*$/, '/');
+  };
+
+  // Clean up timer on page unload
+  window.onbeforeunload = function() {
+    if (watchTimer) clearInterval(watchTimer);
+  };
+})();
+</script>
+</body>
+        </html>
