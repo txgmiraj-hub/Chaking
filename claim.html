@@ -1,0 +1,390 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SXL Lifafa - Claim</title>
+<style>
+  * { box-sizing: border-box; margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+  body { background: #0b1120; color: #e2e8f0; text-align: center; padding-bottom: 30px; }
+  .header { background: #0f172a; padding: 15px 20px; font-size: 24px; font-weight: 700; border-bottom: 1px solid #1e293b; color: white; display: flex; justify-content: center; }
+  .container { max-width: 600px; margin: 20px auto; padding: 0 12px; }
+  .glass-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 32px; padding: 28px 22px; margin-bottom: 24px; box-shadow: 0 20px 35px -8px rgba(0,0,0,0.8); }
+  input { width: 100%; padding: 15px 18px; background: #1e293b; border: 1px solid #334155; border-radius: 24px; color: white; font-size: 15px; margin: 8px 0; outline: none; }
+  input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px #1e3a8a; }
+  .primary-btn { background: linear-gradient(145deg, #2563eb, #1d4ed8); border: none; padding: 16px 40px; border-radius: 60px; font-weight: 700; font-size: 18px; color: white; width: 100%; cursor: pointer; margin: 10px 0; }
+  .primary-btn:hover:not(:disabled) { background: #3b82f6; }
+  .primary-btn:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+  .secondary-btn { background: transparent; border: 2px solid #3b82f6; padding: 16px 40px; border-radius: 60px; font-weight: 700; font-size: 18px; color: white; width: 100%; cursor: pointer; margin: 10px 0; }
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 17, 32, 0.98); backdrop-filter: blur(10px); z-index: 9999; align-items: center; justify-content: center; }
+  .channel-task { background: #1e293b; border: 1px solid #3b82f6; border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .game-container { display: none; margin-top: 20px; background: #1e293b; padding: 20px; border-radius: 20px; border: 2px solid #3b82f6; }
+  .scratch-wrap { position: relative; width: 250px; height: 150px; margin: 0 auto; border-radius: 15px; overflow: hidden; background: #fbbf24; color: #0b1120; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+  .scratch-wrap canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+  .choice-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 15px; }
+  .choice-btn { background: #0f172a; border: 2px solid #334155; padding: 12px 20px; border-radius: 12px; color: white; font-size: 20px; font-weight: bold; cursor: pointer; }
+  .choice-btn.selected { background: #3b82f6; border-color: #60a5fa; transform: scale(1.1); }
+  .dice-cube { font-size: 80px; margin: 20px; transition: transform 0.1s; }
+  .dice-rolling { animation: roll 0.5s infinite; }
+  @keyframes roll { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
+  .coin { width: 100px; height: 100px; margin: 20px auto; background: linear-gradient(45deg, #fbbf24, #f59e0b); border-radius: 50%; border: 5px solid #d97706; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; color: #fff; transition: transform 2s; transform-style: preserve-3d; }
+  .coin.flipping { animation: flip 1s infinite linear; }
+  @keyframes flip { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+  .claimed-alert { background: #ef4444; color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; display: none; }
+
+.copy-link { display: flex; align-items: center; background: #0f172a; border-radius: 60px; border: 1px solid #2563eb; padding: 4px 4px 4px 20px; margin: 20px 0; }
+  .copy-link input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; padding: 12px 5px; margin: 0; }
+  .copy-link button { background: #2563eb; border: none; border-radius: 50px; padding: 12px 24px; font-weight: 600; color: white; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<audio id="winSound" src="https://www.myinstants.com/media/sounds/win-sound.mp3" preload="auto"></audio>
+<audio id="loseSound" src="https://www.myinstants.com/media/sounds/sadtrombone.mp3" preload="auto"></audio>
+
+<div class="header"><span>🛡️ SXL Lifafa</span></div>
+
+<div id="claimPage" class="container" style="display:none;">
+  <div class="glass-card">
+    <div style="font-size: 50px; margin-bottom: 10px;">🎁</div>
+    <h2 id="claimTitle" style="color: #fbbf24;">Loading...</h2>
+    <p id="claimCommentUser" style="color: #cbd5e1; font-style: italic; margin-bottom: 20px;"></p>
+    
+    <div id="alreadyClaimedAlert" class="claimed-alert"></div>
+
+    <div id="channelTasksArea">
+        <h3 style="margin-bottom: 15px; font-size: 18px; color: #60a5fa;">Step 1: Complete All Tasks</h3>
+        <div id="dynamicTasksList"></div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px; align-items: stretch;">
+            <button id="proceedToGameBtn" class="primary-btn" style="flex: 2; margin: 0;" disabled onclick="proceedAfterTasks()">Proceed</button>
+            <button id="claimReferBtn" class="secondary-btn" style="flex: 1; margin: 0; border-color: #10b981; color: #10b981; display: none;" onclick="openReferModal()">🎁 Refer</button>
+        </div>
+    </div>
+
+    <div id="passwordArea" style="display: none; margin-bottom: 20px;">
+        <h3 style="color: #ef4444; margin-bottom: 10px;">🔒 Protected Lifafa</h3>
+        <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 10px;">Enter password to unlock the game.</p>
+        <input type="password" id="claimPassword" placeholder="Enter Secret Code">
+        <button class="primary-btn" onclick="unlockLifafa()">Unlock Game</button>
+    </div>
+
+    <div id="gameArea" class="game-container">
+        <h3 id="gameInstruction" style="color: #60a5fa; margin-bottom: 15px;">Play to Claim!</h3>
+        
+        <div id="normalGame" style="display: none;"><button class="primary-btn" onclick="winReward()">🎁 Win Reward Now</button></div>
+
+        <div id="scratchGame" style="display: none;">
+            <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 10px;">Use your finger to scratch!</p>
+            <div class="scratch-wrap">
+                <div id="scratchResultText">₹0</div>
+                <canvas id="scratchCanvas" width="250" height="150"></canvas>
+            </div>
+        </div>
+
+        <div id="diceGame" style="display: none;">
+            <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 10px;">Select a number first:</p>
+            <div class="choice-grid" id="diceChoices">
+                <button class="choice-btn" onclick="selectDice(1, event)">1</button>
+                <button class="choice-btn" onclick="selectDice(2, event)">2</button>
+                <button class="choice-btn" onclick="selectDice(3, event)">3</button>
+                <button class="choice-btn" onclick="selectDice(4, event)">4</button>
+                <button class="choice-btn" onclick="selectDice(5, event)">5</button>
+                <button class="choice-btn" onclick="selectDice(6, event)">6</button>
+            </div>
+            <div id="diceCube" class="dice-cube">🎲</div>
+            <button id="rollBtn" class="primary-btn" disabled onclick="rollDice()">Roll Dice</button>
+        </div>
+
+        <div id="tossGame" style="display: none;">
+
+<p style="color: #cbd5e1; font-size: 14px; margin-bottom: 10px;">Heads or Tails?</p>
+            <div class="choice-grid">
+                <button class="choice-btn toss-choice" onclick="selectToss('Heads', event)">Heads</button>
+                <button class="choice-btn toss-choice" onclick="selectToss('Tails', event)">Tails</button>
+            </div>
+            <div id="coinObj" class="coin">🪙</div>
+            <button id="tossBtn" class="primary-btn" disabled onclick="tossCoin()">Toss Coin</button>
+        </div>
+
+        <div id="phoneInputArea" style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed #334155; display: none;">
+            <p style="color:#cbd5e1; font-size:14px; margin-bottom: 10px; text-align: left;">Enter your Paytm/UPI number for reward:</p>
+            <input type="number" id="winnerPhone" placeholder="Enter Mobile Number" style="margin-bottom: 0;">
+        </div>
+        
+        <div id="finalResultText" style="margin-top: 20px; font-size: 18px; color: #10b981; display: none;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="botModal" class="modal-overlay">
+  <div class="glass-card" style="max-width: 400px; width: 90%;">
+    <div style="font-size: 50px; margin-bottom: 15px;">🤖</div>
+    <h2 style="margin-bottom: 10px;">Security Verification</h2>
+    <p style="color: #cbd5e1; margin-bottom: 20px; font-size: 15px;">Please verify with our bot to prevent fake claims.</p>
+    <div style="background: #1e293b; padding: 12px; border-radius: 12px; margin-bottom: 20px; font-weight: bold; color: #fbbf24;">@SxlAlert_bot</div>
+    <button id="verifyBtn" class="primary-btn" onclick="verifyViaBot()">1. Open Telegram Bot</button>
+  </div>
+</div>
+
+<div id="referModal" class="modal-overlay">
+    <div class="glass-card" style="max-width: 400px; width: 90%;">
+      <h2 style="margin-bottom: 10px; color: #10b981;">🎁 Refer & Earn</h2>
+      <p style="color: #cbd5e1; margin-bottom: 20px; font-size: 15px;">Earn <b>₹<span id="referEarnAmountDisplay">0</span></b> for every friend who claims from your link!</p>
+      <div id="referInputArea">
+          <input type="number" id="referPhoneInput" placeholder="Enter your Paytm Number">
+          <button class="primary-btn" onclick="generateUserReferLink()">Generate Link</button>
+      </div>
+      <div class="copy-link" id="referLinkBox" style="display: none;">
+        <input type="text" id="myReferLink" readonly>
+        <button onclick="copyReferLink()">📋 COPY</button>
+      </div>
+      <button class="secondary-btn" style="width: 100%; border:none; margin-top: 10px; color: #ef4444;" onclick="closeReferModal()">Close</button>
+    </div>
+</div>
+
+<script>
+  let currentLifafaData = null;
+  let tasksStatus = {}; 
+  let totalRequiredTasks = 0;
+  let userDiceChoice = 0;
+  let userTossChoice = '';
+
+  const urlParams = new URLSearchParams(window.location.search);
+  let gid = urlParams.get('id');
+  const refId = urlParams.get('ref');
+
+  // --- DEBUG MODE: Agar ID nahi hai to test data banao ---
+  if (!gid) {
+      console.log("No ID found in URL. Using Test Mode...");
+      gid = "test-123";
+      const testData = {
+          "test-123": {
+              name: "Welcome Bonus Lifafa",
+              comment: "Testing the SmartXlifafa System!",
+              per: 5,
+              total: 50,
+              claimed: 0,
+              type: "scratch",
+              channels: [{title: "Join Channel", link: "https://t.me/SxlAlert_bot"}],
+              codeRequired: false
+          }
+      };
+      localStorage.setItem('giveaways', JSON.stringify(testData));
+  }
+
+  function loadClaimData(id) {
+      const giveaways = JSON.parse(localStorage.getItem('giveaways') || '{}');
+      if(giveaways[id]) {
+          currentLifafaData = giveaways[id];
+          document.getElementById('claimTitle').innerText = currentLifafaData.name;
+
+document.getElementById('claimCommentUser').innerText = "${currentLifafaData.comment || ''}";
+          
+          if(currentLifafaData.referAmount > 0) {
+              document.getElementById('claimReferBtn').style.display = 'block';
+              document.getElementById('referEarnAmountDisplay').innerText = currentLifafaData.referAmount;
+          }
+
+          if(currentLifafaData.claimed >= currentLifafaData.total) {
+              const alertBox = document.getElementById('alreadyClaimedAlert');
+              alertBox.style.display = 'block';
+              alertBox.innerHTML = "Oops! This Lifafa has been fully claimed (Over).";
+              document.getElementById('channelTasksArea').style.display = 'none';
+              return;
+          }
+
+let previouslyClaimedNumber = localStorage.getItem('claimed_number_' + id);
+          if (previouslyClaimedNumber) {
+              const alertBox = document.getElementById('alreadyClaimedAlert');
+              alertBox.style.display = 'block';
+              alertBox.innerHTML = You have already claimed this!<br><br><span style="color: #fef08a;">Number: ${previouslyClaimedNumber}</span>;
+              document.getElementById('channelTasksArea').style.display = 'none';
+              return; 
+          }
+
+          generateTasksList();
+          document.getElementById('claimPage').style.display = 'block';
+      } else {
+          document.body.innerHTML = "<h2 style='color:white; margin-top:50px;'>Invalid or Expired Lifafa Link!</h2><p>Please use a valid link from your admin panel.</p>";
+      }
+  }
+
+  function generateTasksList() {
+      let listHTML = '';
+      totalRequiredTasks = 0;
+      tasksStatus = {};
+
+      if (currentLifafaData.channels && currentLifafaData.channels.length > 0) {
+          currentLifafaData.channels.forEach((ch, idx) => {
+              if(!ch.link) return;
+              const title = ch.title || Join Channel ${idx+1};
+              listHTML += <div id="taskbox_ch_${idx}" class="channel-task"><span>${title}</span><button class="secondary-btn" style="width:auto; padding:8px 20px; margin:0; font-size:14px;" onclick="executeTask('ch_${idx}', '${ch.link}')">Join</button></div>;
+              totalRequiredTasks++;
+              tasksStatus['ch_'+idx] = false;
+          });
+      }
+
+      document.getElementById('dynamicTasksList').innerHTML = listHTML || "<p>No tasks required. Click Proceed.</p>";
+      if(totalRequiredTasks === 0) document.getElementById('proceedToGameBtn').disabled = false;
+  }
+
+  function executeTask(taskId, link) {
+      window.open(link, '_blank');
+      tasksStatus[taskId] = true;
+      const taskBox = document.getElementById('taskbox_' + taskId);
+      if(taskBox) {
+          taskBox.style.opacity = '0.5';
+          taskBox.querySelector('button').innerText = 'Done ✓';
+      }
+      
+      let completed = Object.values(tasksStatus).filter(v => v === true).length;
+      if(completed >= totalRequiredTasks) document.getElementById('proceedToGameBtn').disabled = false;
+  }
+
+  function proceedAfterTasks() {
+      document.getElementById('channelTasksArea').style.display = 'none';
+      if(currentLifafaData.codeRequired) {
+          document.getElementById('passwordArea').style.display = 'block';
+      } else {
+          showGame();
+      }
+  }
+
+  function unlockLifafa() {
+      const inputPass = document.getElementById('claimPassword').value.trim();
+      if(inputPass === currentLifafaData.code) {
+          document.getElementById('passwordArea').style.display = 'none';
+          showGame();
+      } else {
+          alert("Incorrect Secret Code!");
+      }
+  }
+
+  function showGame() {
+      document.getElementById('gameArea').style.display = 'block';
+      const type = currentLifafaData.type || 'normal';
+      document.getElementById('normalGame').style.display = (type === 'normal') ? 'block' : 'none';
+      document.getElementById('scratchGame').style.display = (type === 'scratch') ? 'block' : 'none';
+      document.getElementById('diceGame').style.display = (type === 'dice') ? 'block' : 'none';
+      document.getElementById('tossGame').style.display = (type === 'toss') ? 'block' : 'none';
+      if(type === 'scratch') initScratch();
+  }
+
+  function showResult(won, amount) {
+      const res = document.getElementById('finalResultText');
+      res.style.display = 'block';
+      if(won) {
+          try { document.getElementById('winSound').play(); } catch(e){}
+          res.innerHTML = <div style="font-size:24px; font-weight:bold; color:#10b981;">🎉 You Won ₹${amount}!</div><button class="primary-btn" style="margin-top:15px;" onclick="submitFinalClaim(${amount})">Claim to Wallet</button>;
+
+document.getElementById('phoneInputArea').style.display = 'block';
+      } else {
+          try { document.getElementById('loseSound').play(); } catch(e){}
+          res.innerHTML = <strong style="color: #ef4444; font-size: 20px;">😔 Better luck next time!</strong>;
+      }
+  }
+
+  function submitFinalClaim(amount) {
+      const phone = document.getElementById('winnerPhone').value;
+      if(phone.length < 10) return alert("Enter 10 digit number");
+      
+      localStorage.setItem('claimed_number_' + gid, phone);
+      
+      // Update Claim Count
+      let giveaways = JSON.parse(localStorage.getItem('giveaways') || '{}');
+      if(giveaways[gid]) {
+          giveaways[gid].claimed += 1;
+          localStorage.setItem('giveaways', JSON.stringify(giveaways));
+      }
+
+      document.getElementById('phoneInputArea').style.display = 'none';
+      document.getElementById('finalResultText').innerHTML = <div style="color:#10b981; padding:20px; border:1px solid #10b981; border-radius:20px;">✅ Reward Sent to ${phone}!</div>;
+  }
+
+  // --- Game Mechanics ---
+  function winReward() { showResult(true, currentLifafaData.per); }
+
+  function initScratch() {
+      const canvas = document.getElementById('scratchCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#94a3b8'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      document.getElementById('scratchResultText').innerText = ₹${currentLifafaData.per};
+      let isDrawing = false;
+      function scratch(e) {
+          if(!isDrawing) return;
+          const rect = canvas.getBoundingClientRect();
+          const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+          const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI*2); ctx.fill();
+          
+          // Check percentage
+          const pixels = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+          let transparent = 0;
+          for(let i=3; i<pixels.length; i+=4) if(pixels[i] === 0) transparent++;
+          if(transparent > pixels.length/4 * 0.5) {
+              canvas.style.display = 'none'; showResult(true, currentLifafaData.per);
+          }
+      }
+      canvas.onmousedown = () => isDrawing = true;
+      window.onmouseup = () => isDrawing = false;
+      canvas.onmousemove = scratch;
+      canvas.ontouchstart = () => isDrawing = true;
+      canvas.ontouchmove = scratch;
+  }
+
+  function selectDice(n, e) {
+      userDiceChoice = n;
+      document.querySelectorAll('#diceChoices .choice-btn').forEach(b => b.classList.remove('selected'));
+      e.currentTarget.classList.add('selected');
+      document.getElementById('rollBtn').disabled = false;
+  }
+
+  function rollDice() {
+      const cube = document.getElementById('diceCube');
+      cube.classList.add('dice-rolling');
+      setTimeout(() => {
+          cube.classList.remove('dice-rolling');
+          cube.innerText = userDiceChoice + '️⃣';
+          showResult(true, currentLifafaData.per);
+      }, 1500);
+  }
+
+  function selectToss(c, e) {
+      userTossChoice = c;
+      document.querySelectorAll('.toss-choice').forEach(b => b.classList.remove('selected'));
+      e.currentTarget.classList.add('selected');
+      document.getElementById('tossBtn').disabled = false;
+  }
+
+  function tossCoin() {
+      const coin = document.getElementById('coinObj');
+      coin.classList.add('flipping');
+      setTimeout(() => {
+          coin.classList.remove('flipping');
+          coin.innerText = userTossChoice === 'Heads' ? 'H' : 'T';
+          showResult(true, currentLifafaData.per);
+      }, 1500);
+  }
+
+  function verifyViaBot() {
+      window.open('https://t.me/SxlAlert_bot', '_blank');
+      localStorage.setItem('bot_verified', 'true');
+      document.getElementById('botModal').style.display = 'none';
+      document.getElementById('claimPage').style.display = 'block';
+  }
+
+// --- Start ---
+  window.onload = () => {
+      const botVerified = localStorage.getItem('bot_verified');
+      if (!botVerified) {
+          document.getElementById('botModal').style.display = 'flex';
+      } else {
+          loadClaimData(gid);
+      }
+  };
+</script>
+</body>
+          </html>
